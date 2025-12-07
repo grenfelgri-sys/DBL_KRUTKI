@@ -32,6 +32,7 @@ wss.on('connection', (ws, req) => {
     } else {
         players.push(ws);
         console.log('Игрок подключился');
+        console.log(url)
     }
 
     ws.on('message', (message) => {
@@ -39,10 +40,7 @@ wss.on('connection', (ws, req) => {
 
         switch (data.type) {
             case 'question':
-                currentQuestion = {
-                    question: data.question,
-                    options: data.options
-                };
+                currentQuestion = { question: data.question, options: data.options };
                 correctAnswer = data.correctIndex;
                 answers = {};
 
@@ -53,9 +51,25 @@ wss.on('connection', (ws, req) => {
                 })));
                 break;
 
-            case 'answer':
-                answers[data.playerId] = data.answerIndex;
+                case 'join':
+                    ws.playerName = data.name;
+                    console.log(`Игрок подключился: ${data.name}`);
 
+                    // Отправляем ведущему список игроков
+                    if (hostSocket) {
+                        state = { players: {} };
+                        players.forEach(p => {
+                            if (p.playerName) {
+                                state.players[p.playerName] = { name: p.playerName, score: 0 };
+                            }
+                        });
+                        hostSocket.send(JSON.stringify({ type: 'state', state }));
+                    }
+                    break;
+
+
+            case 'answer':
+                answers[ws.playerName] = data.answer;
                 if (hostSocket) {
                     hostSocket.send(JSON.stringify({
                         type: 'playerAnswers',
@@ -65,11 +79,11 @@ wss.on('connection', (ws, req) => {
                 break;
 
             case 'showResult':
-                players.forEach((p, index) => {
+                players.forEach((p) => {
                     p.send(JSON.stringify({
                         type: 'result',
                         correctAnswer,
-                        yourAnswer: answers[index]
+                        yourAnswer: answers[p.playerName]
                     }));
                 });
                 break;
