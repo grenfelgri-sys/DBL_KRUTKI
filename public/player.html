@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Игрок</title>
+<style>
+body { font-family: Arial; padding: 20px; }
+button { padding: 10px; margin: 5px; }
+</style>
+</head>
+<body>
+
+<h1>Игрок</h1>
+<p>Введите имя:</p>
+<input id="name">
+<button onclick="join()">Войти</button>
+
+<div id="game" style="display:none">
+    <h2 id="playerName"></h2>
+    <h3>Вопрос:</h3>
+    <div id="q">Ожидание...</div>
+    <button onclick="answer('Да')">Да</button>
+    <button onclick="answer('Нет')">Нет</button>
+</div>
+
+<script>
+let ws = new WebSocket("ws://" + location.host);
+
+ws.onmessage = (m) => {
+    let data = JSON.parse(m.data);
+
+    if (data.type === "state") {
+        let st = data.state;
+        document.getElementById("q").innerText = st.question || "Ожидание...";
+    }
+};
+
+function join() {
+    let name = document.getElementById("name").value.trim();
+    if (!name) return;
+
+    document.getElementById("playerName").innerText = name;
+    document.getElementById("game").style.display = "block";
+
+    ws.send(JSON.stringify({
+        type: "join",
+        name
+    }));
+}
+
+function answer(a) {
+    ws.send(JSON.stringify({
+        type: "answer",
+        answer: a
+    }));
+}
+</script>
+
+</body>
+</html>

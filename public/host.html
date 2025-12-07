@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Ведущий</title>
+<style>
+body { font-family: Arial; padding: 20px; }
+button { padding: 10px; margin: 5px; }
+</style>
+</head>
+<body>
+<h1>Ведущий</h1>
+
+<button onclick="sendCmd({gameRunning:true})">Начать игру</button>
+<button onclick="sendCmd({gameRunning:false})">Закончить игру</button>
+
+<h3>Раунд</h3>
+<button onclick="sendCmd({roundRunning:true})">Начать раунд</button>
+<button onclick="sendCmd({roundRunning:false})">Закончить раунд</button>
+
+<h3>Вопрос</h3>
+<input id="q" placeholder="Вопрос" style="width:300px">
+<select id="correct">
+  <option>Да</option>
+  <option>Нет</option>
+</select>
+<button onclick="sendQuestion()">Отправить вопрос</button>
+
+<h3>Игроки</h3>
+<div id="players"></div>
+
+<script>
+let ws = new WebSocket("ws://" + location.host);
+
+ws.onmessage = (m) => {
+    let data = JSON.parse(m.data);
+
+    if (data.type === "state") {
+        let list = "";
+        for (let id in data.state.players) {
+            let p = data.state.players[id];
+            list += `${p.name}: ${p.score}<br>`;
+        }
+        document.getElementById("players").innerHTML = list;
+    }
+};
+
+function sendCmd(payload) {
+    ws.send(JSON.stringify({type:"host_command", payload}));
+}
+
+function sendQuestion() {
+    sendCmd({
+        question: document.getElementById("q").value,
+        correct: document.getElementById("correct").value,
+        roundRunning: true
+    });
+}
+</script>
+</body>
+</html>
