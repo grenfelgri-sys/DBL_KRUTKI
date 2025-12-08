@@ -10,7 +10,6 @@ const wss = new WebSocket.Server({ server });
 let hostSocket = null;
 let players = [];
 let currentQuestion = null;
-let answers = {};
 let correctAnswer = null;
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -32,7 +31,6 @@ wss.on('connection', (ws, req) => {
     } else {
         players.push(ws);
         console.log('Игрок подключился');
-        console.log(url)
     }
 
     ws.on('message', (message) => {
@@ -40,14 +38,14 @@ wss.on('connection', (ws, req) => {
 
         switch (data.type) {
             case 'question':
-                currentQuestion = { question: data.question, options: data.options };
+                currentQuestion = data.question;
                 correctAnswer = data.correctIndex;
                 answers = {};
+                console.log(currentQuestion)
 
                 players.forEach(p => p.send(JSON.stringify({
                     type: 'question',
-                    question: data.question,
-                    options: data.options
+                    question: currentQuestion
                 })));
                 break;
 
@@ -60,7 +58,7 @@ wss.on('connection', (ws, req) => {
                         state = { players: {} };
                         players.forEach(p => {
                             if (p.playerName) {
-                                state.players[p.playerName] = { name: p.playerName, score: 0 };
+                                state.players[p.playerName] = { name: p.playerName, score: 0, player_answers: ''};
                             }
                         });
                         hostSocket.send(JSON.stringify({ type: 'state', state }));
@@ -69,13 +67,18 @@ wss.on('connection', (ws, req) => {
 
 
             case 'answer':
-                answers[ws.playerName] = data.answer;
+                players.forEach(p => {
+                    if (p.playerName === ws.playerName) {
+                        state.players[p.playerName] = { name: p.playerName, score: 0, player_answers: data.answer};
+                    }
+                });
+                console.log()
                 if (hostSocket) {
                     hostSocket.send(JSON.stringify({
                         type: 'playerAnswers',
-                        answers
+                        state
                     }));
-                }
+                  }
                 break;
 
             case 'showResult':
@@ -96,6 +99,15 @@ wss.on('connection', (ws, req) => {
             console.log("Ведущий отключился");
         } else {
             players = players.filter(p => p !== ws);
+            if (hostSocket) {
+                state = { players: {} };
+                players.forEach(p => {
+                    if (p.playerName) {
+                        state.players[p.playerName] = { name: p.playerName, score: 0 };
+                    }
+                });
+                hostSocket.send(JSON.stringify({ type: 'state', state }));
+            }
             console.log("Игрок отключился");
         }
     });

@@ -24,14 +24,14 @@ button { padding: 10px; margin: 5px; }
 </div>
 
 <script>
-let ws = new WebSocket("ws://localhost:3000/player");
+let ws = new WebSocket("wss://dbl-krutki.onrender.com/player");
 
 ws.onmessage = (m) => {
     let data = JSON.parse(m.data);
 
-    if (data.type === "state") {
-        let st = data.state;
-        document.getElementById("q").innerText = st.question || "Ожидание...";
+    if (data.type === "question") {
+        let que = data.question;
+        document.getElementById("q").innerText = que || "Ожидание...";
     }
 };
 

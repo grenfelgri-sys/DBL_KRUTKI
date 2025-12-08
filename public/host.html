@@ -30,16 +30,16 @@ button { padding: 10px; margin: 5px; }
 <div id="players"></div>
 
 <script>
-let ws = new WebSocket("ws://localhost:3000/host");
+let ws = new WebSocket("wss://dbl-krutki.onrender.com/host");
 
 ws.onmessage = (m) => {
     let data = JSON.parse(m.data);
 
-    if (data.type === "state") {
+    if (data.type === "state" || data.type === "playerAnswers") {
         let list = "";
         for (let id in data.state.players) {
             let p = data.state.players[id];
-            list += `${p.name}: ${p.score}<br>`;
+            list += `${p.name}: ${p.score} ответил ${p.player_answers}<br>`;
         }
         document.getElementById("players").innerHTML = list;
     }
@@ -50,12 +50,13 @@ function sendCmd(payload) {
 }
 
 function sendQuestion() {
-    sendCmd({
+    ws.send(JSON.stringify({
+        type: "question",
         question: document.getElementById("q").value,
         correct: document.getElementById("correct").value,
         roundRunning: true
-    });
-}
+    }))
+};
 </script>
 </body>
 </html>
