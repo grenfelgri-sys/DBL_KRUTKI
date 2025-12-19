@@ -10,9 +10,18 @@
   </style>
 </head>
 <body>
-  <h1>Добро пожаловать в квиз!</h1>
-  <p>Выберите роль:</p>
-  <a href="/host">Ведущий</a>
-  <a href="/player">Игрок</a>
+<link rel="stylesheet" href="style_index.css">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+  <img src="media\logo_KRUTKI.png" alt="Фото" id="logo">
+  <h1 id='wellcome'>Добро пожаловать на крутки Dragon Ball Legends!</h1>
+  <p>Введите имя:</p>
+  <form id="loginForm" action="/login" method="POST">
+    <input type="text" name="username" class = "name_input" placeholder="Ваше имя" required>
+    <button type="submit" id='entry'>Войти</button>
+  </form>
+</div>
+<video autoplay muted loop playsinline id="background-video">
+<source src="media\index_background.mp4" type="video/mp4">
+</video>
 </body>
 </html>

@@ -1,0 +1,82 @@
+#background-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 100;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* обрезает или масштабирует видео под экран */
+  object-position: 50% 50%;
+  filter: brightness(60%); /* уменьшает яркость до 60% */
+  z-index: -1; /* отправляем видео под контент */
+}
+
+#playerName{
+  font-size: 35px;
+  font-style: oblique;
+  text-shadow: 2px 2px black
+}
+
+.loading{
+  display: inline-block; /* всё в одной линии */
+  margin: 0;
+  padding: 0;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.dots{
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+}
+.dots span {
+  animation: blink 1.5s infinite;
+}
+
+.dots span:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.dots span:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+@keyframes blink {
+  0% { opacity: 0; }
+  30% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+#ll {
+  font-size: 20px;
+}
+
+#YES,
+#NO {
+  background: rgba(249, 249, 249, 0.6);
+  backdrop-filter: blur(7px);
+  border-radius: 10px;
+}
+
+#p{
+  font-size: 30px;
+}
+
+#pscore{
+  font-size: 25px;
+  font-style: oblique;
+  width: fit-content;
+  background: rgba(205, 205, 205, 0.7); /* прозрачный белый фон */
+  border: 2px solid rgba(85, 85, 85, 0.85); /* полупрозрачная белая рамка */
+  padding: 10px 5px;
+  border-radius: 10px;
+  -webkit-text-stroke: 1px rgba(35, 35, 35, 0.85); /* толщина и цвет обводки */
+  text-stroke: 1px rgba(35, 35, 35, 0.85);
+}
+.content {
+  position: relative;
+  z-index: 1;
+  color: white;
+  text-align: left;
+  font-family: Arial, sans-serif;
+}

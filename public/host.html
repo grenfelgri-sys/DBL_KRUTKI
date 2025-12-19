@@ -3,58 +3,143 @@
 <head>
 <meta charset="UTF-8">
 <title>Ведущий</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#ffffff">
 <style>
 body { font-family: Arial; padding: 20px; }
 button { padding: 10px; margin: 5px; }
 </style>
 </head>
 <body>
-<h1>Ведущий</h1>
+<link rel="stylesheet" href="style_host.css">
 
-<button onclick="sendCmd({gameRunning:true})">Начать игру</button>
-<button onclick="sendCmd({gameRunning:false})">Закончить игру</button>
+<div class='content'>
+  <h1>Ведущий</h1>
 
-<h3>Раунд</h3>
-<button onclick="sendCmd({roundRunning:true})">Начать раунд</button>
-<button onclick="sendCmd({roundRunning:false})">Закончить раунд</button>
+  <button id='gamerun' onclick="sendCmd_game()">Начать игру</button>
 
-<h3>Вопрос</h3>
-<input id="q" placeholder="Вопрос" style="width:300px">
-<select id="correct">
-  <option>Да</option>
-  <option>Нет</option>
-</select>
-<button onclick="sendQuestion()">Отправить вопрос</button>
+  <h3 id="roundnum">Раунд</h3>
+  <button id='roundrun' onclick="sendCmd_round()">Начать раунд</button>
 
-<h3>Игроки</h3>
-<div id="players"></div>
+  <div id="answer" style="display:none">
+    <h3>Выпала лл в этом раунде?</h3>
+    <button id="YES" onclick="sendAnswer('ДА')">Да</button>
+    <button id="NO" onclick="sendAnswer('НЕТ')">Нет</button>
+    <button id="skip" onclick="sendAnswer('none')">Скип</button>
+  </div>
+
+  <h3>Игроки</h3>
+  <div id="players"></div>
+</div>
+
+<div id='playerwin' style='display:none'>
+  <h1 id='winner'></h1>
+  <button onclick='accept_winner()'id='accept'>Ок</button>
+</div>
+
+<video autoplay muted loop playsinline id="background-video">
+<source src="media\host_background.mp4" type="video/mp4">
 
 <script>
-let ws = new WebSocket("wss://dbl-krutki.onrender.com/host");
+let ws = new WebSocket("ws://localhost:3000/host");
+let gameRunning = false
+let roundRunning = 'end'
+round = null
 
 ws.onmessage = (m) => {
     let data = JSON.parse(m.data);
 
-    if (data.type === "state" || data.type === "playerAnswers") {
-        let list = "";
+    if (data.type === "state") {
+        document.getElementById("players").innerHTML = ''
         for (let id in data.state.players) {
             let p = data.state.players[id];
-            list += `${p.name}: ${p.score} ответил ${p.player_answers}<br>`;
+            if (roundRunning === 'start') {
+              if (p.player_answers) {
+                document.getElementById("players").innerHTML += `<div class="player" style="opacity: 0.4"> <h3>${p.name}</h3> <h4>Счёт: ${p.score}</h4> </div>`
+              } else {
+                document.getElementById("players").innerHTML += `<div class="player"> <h3>${p.name}</h3> <h4>Счёт: ${p.score}</h4> </div>`
+              }
+            } else if (roundRunning === 'stop') {
+              document.getElementById("players").innerHTML += `<div class="player"> <h3>${p.name}</h3> <h4>Счёт: ${p.score}</h4> <h2 id="background_answer">${p.player_answers}</h2> </div>`
+            } else {
+              if (gameRunning === true) {
+                if ((p.correct) && (p.correct === 'true')) {
+                  document.getElementById("players").innerHTML += `<div class="player" style="background:rgba(0, 204, 0, 0.65); border: 3px solid rgb(0, 85, 0)"> <h3 id="player_${p.name}" style="color:black">${p.name}</h3> <h4 style="color:black">Счёт: ${p.score}</h4> <h2 id="background_answer">${p.player_answers}</h2> </div>`
+                } else if ((p.correct) && (p.correct === 'false')) {
+                  document.getElementById("players").innerHTML += `<div class="player" style="background:rgba(204, 0, 0, 0.65); border: 3px solid rgb(85, 0, 0)"> <h3 id="player_${p.name}" style="color:black">${p.name}</h3> <h4 style="color:black">Счёт: ${p.score}</h4> <h2 id="background_answer">${p.player_answers}</h2> </div>`
+              } else {
+                document.getElementById("players").innerHTML += `<div class="player"> <h3>${p.name}</h3> <h4>Счёт: ${p.score}</h4> </div>`
+              }
+            } else {
+                document.getElementById("players").innerHTML += `<div class="player"> <h3>${p.name}</h3> </div>`
+            };
+            }
         }
-        document.getElementById("players").innerHTML = list;
+
+    }
+
+    if (data.type === 'win' && data.plWinner !== '') {
+      document.getElementById("playerwin").style.display = "block";
+      document.getElementById("winner").innerHTML = `Победитель:<br>${data.plWinner}`;
+      document.querySelector('.content').style.pointerEvents = "none";
+      document.querySelector('.content').style.filter = 'brightness(70%)';
+      document.getElementById("background-video").style.filter = 'brightness(30%)';
     }
 };
 
-function sendCmd(payload) {
-    ws.send(JSON.stringify({type:"host_command", payload}));
+function accept_winner(){
+  document.getElementById("playerwin").style.display = "none";
+  document.querySelector('.content').style.pointerEvents = "auto";
+  document.querySelector('.content').style.filter = 'brightness(100%)';
+  document.getElementById("background-video").style.filter = 'brightness(60%)';
 }
 
-function sendQuestion() {
+function sendCmd_game() {
+  if (gameRunning === false) {
+    gameRunning = true
+    ws.send(JSON.stringify({type:"host_commandGame", gameRunning}));
+    document.getElementById("playerwin").style.display = "none";
+    document.getElementById("gamerun").innerText = "Закончить игру";
+  } else {
+    gameRunning = false
+    ws.send(JSON.stringify({type:"host_commandGame", gameRunning}));
+    document.getElementById("answer").style.display = "none";
+    roundRunning = 'end'
+    round = null
+    document.getElementById("roundnum").innerText = "Раунд";
+    ws.send(JSON.stringify({type:"host_commandRound", roundRunning}));
+    document.getElementById("gamerun").innerText = "Начать игру";
+    document.getElementById("roundrun").innerText = "Начать раунд";
+  }
+};
+
+function sendCmd_round() {
+  if (gameRunning === true) {
+    if (roundRunning === 'end') {
+      if (document.getElementById("answer").style.display === "none") {
+        roundRunning = 'start';
+        round += 1;
+        document.getElementById("roundnum").innerText = "Раунд " + round;
+        ws.send(JSON.stringify({type:"host_commandRound", roundRunning}));
+        document.getElementById("roundrun").innerText = "Закончить раунд";
+        document.getElementById("answer").style.display = "none";
+      }
+    } else if (roundRunning === 'start'){
+      roundRunning = 'stop'
+      ws.send(JSON.stringify({type:"host_commandRound", roundRunning}));
+      document.getElementById("roundrun").innerText = "Начать раунд";
+      document.getElementById("answer").style.display = "block";
+    }
+  }
+};
+
+function sendAnswer(a) {
+    roundRunning = 'end'
+    ws.send(JSON.stringify({type:"host_commandRound", roundRunning}));
+    document.getElementById("answer").style.display = "none";
     ws.send(JSON.stringify({
-        type: "question",
-        question: document.getElementById("q").value,
-        correct: document.getElementById("correct").value,
-        roundRunning: true
+        type: "result",
+        correct: a
     }))
 };
 </script>

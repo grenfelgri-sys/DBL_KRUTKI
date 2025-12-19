@@ -1,0 +1,110 @@
+#background-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 100;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* обрезает или масштабирует видео под экран */
+  object-position: 50% 30%;
+  filter: brightness(60%); /* уменьшает яркость до 60% */
+  z-index: -1; /* отправляем видео под контент */
+}
+
+.player {
+  position: relative;
+  margin-bottom: 20px; /* расстояние между игроками */
+  background: rgba(249, 249, 249, 0.65);
+  border: 3px solid rgb(105, 105, 105);
+  border-radius: 25px; /* закруглённые углы */
+  box-sizing: border-box;
+  width: fit-content;
+  min-width: 50px;
+  padding: 5px 20px;
+  height: 50px;
+  overflow: hidden;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  color: white;
+  text-align: left;
+  font-family: Arial, sans-serif;
+}
+
+.player h2#background_answer{
+  z-index: -1;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -125%); /* центрирует по вертикали и горизонтали */
+  color: rgba(255, 255, 255, 0.9); /* полупрозрачный */
+  font-size: 50px;
+  -webkit-text-stroke: 2px rgba(0, 0, 0, 0.9); /* толщина и цвет обводки */
+  text-stroke: 2px black;
+  pointer-events: none; /* чтобы текст не мешал кликам */
+}
+
+.player h3,
+.player h4 {
+  position: relative;
+  z-index: 0;
+  font-style: oblique;
+  margin: 0;       /* убирает внешние отступы */
+  padding: 0;      /* убирает внутренние отступы */
+  line-height: 1;  /* уменьшает межстрочное расстояние */
+  color: rgb(65, 65, 65);
+}
+
+.player h3 {
+  text-align: top;
+  text-shadow: 1px 1px white
+}
+
+#roundnum{
+  font-size: 25px;
+}
+
+#YES,
+#NO,
+#skip,
+#gamerun,
+#roundrun{
+  background: rgba(249, 249, 249, 0.6);
+  backdrop-filter: blur(7px);
+  border-radius: 10px;
+}
+
+#skip{
+  margin-left: 50px
+}
+
+#playerwin{
+  position: fixed;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(249, 249, 249, 0.75);
+  border: 2px solid rgba(85, 85, 85, 0.85);
+  width: fit-content;
+  box-sizing: border-box;
+  padding: 5px 20px;
+  height: 175px;
+  min-width: 100px;
+  backdrop-filter: blur(5px);
+}
+
+#winner{
+  position: relative;
+  text-align: center;
+  font-style: oblique;
+  text-shadow: 2px 2px white
+}
+
+#accept{
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}

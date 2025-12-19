@@ -9,39 +9,150 @@ button { padding: 10px; margin: 5px; }
 </style>
 </head>
 <body>
+<link rel="stylesheet" href="style_player.css">
 
-<h1>Игрок</h1>
-<p>Введите имя:</p>
-<input id="name">
-<button onclick="join()">Войти</button>
-
-<div id="game" style="display:none">
-    <h2 id="playerName"></h2>
-    <h3>Вопрос:</h3>
-    <div id="q">Ожидание...</div>
-    <button onclick="answer('Да')">Да</button>
-    <button onclick="answer('Нет')">Нет</button>
+<div id="game" style="display:block" class='content'>
+    <h1 id="playerName"></h1>
+    <div class="loading">
+    <h3 id = "waitgame" style="display:block">Ожидание запуска игры <span class="dots">
+    <span>.</span><span>.</span><span>.</span>
+    </span></h3>
+    <h3 id = "waitround" style="display:none">Ожидание начала раунда <span class="dots">
+    <span>.</span><span>.</span><span>.</span>
+    </span></h3>
+    <h3 id = "waitresult" style="display:none">Ожидание результатов раунда <span class="dots">
+    <span>.</span><span>.</span><span>.</span>
+    </span></h3>
+    </div>
+    <div id ="question" style="display:none"> <h3 id='ll'> Вопрос: выпадит лл или нет?</h3>
+    <h4 id="q">Ожидание...</h4>
+    <div id = 'accept' style="display:block">
+    <button id='YES' onclick="answer('ДА')">Да</button>
+    <button id='NO' onclick="answer('НЕТ')">Нет</button>
+    </div>
+    </div>
+    <h4 id="p"></h4>
+    <br />
+    <h3 id='pscore' style="display:none"></h3>
 </div>
 
+<video autoplay muted loop playsinline id="background-video">
+<source src="media\player_background.mp4" type="video/mp4">
+
 <script>
-let ws = new WebSocket("wss://dbl-krutki.onrender.com/player");
+let ws = new WebSocket("ws://localhost:3000/player");
+let gameRunning = false
+let roundRunning = false
+let roundResult = ''
+var score = 0
+let panswer = ''
+
+function getCookie(name) {
+        const value = document.cookie
+            .split("; ")
+            .find(row => row.startsWith(name + "="))
+            ?.split("=")[1];
+
+        return value ? decodeURIComponent(value) : null;
+    }
+const name = getCookie("username");
+document.getElementById("playerName").innerText = name
 
 ws.onmessage = (m) => {
     let data = JSON.parse(m.data);
 
-    if (data.type === "question") {
-        let que = data.question;
-        document.getElementById("q").innerText = que || "Ожидание...";
+    if (data.type === "join") { join() }
+
+    if (data.type === "gmr"){
+        gameRunning = data.game_Running
+        if (gameRunning === false) {
+          answer('')
+          document.getElementById("accept").style.display = "none"
+          score = 0
+          document.getElementById("pscore").innerText = ''
+        }
+    };
+
+    if (data.type === "rnr"){
+        roundRunning = data.round_Running;
+        if (roundRunning === 'start') {
+          answer('')
+          document.getElementById("accept").style.display = "block"
+        } else if (roundRunning === 'stop'){
+          answer(panswer)
+        }
+    };
+
+    if (data.type === "roundres"){
+        roundResult = data.round_result
+        document.getElementById("pscore").style.display = "block";
+        if (roundResult !== 'none'){
+        if (panswer === roundResult) {
+          if (panswer === 'ДА') {
+            score += 3
+            document.getElementById("pscore").innerText = 'Счёт: ' + score
+          } else {
+            score += 1
+            document.getElementById("pscore").innerText = 'Счёт: ' + score
+          }
+          ws.send(JSON.stringify({
+              type: "playerresult",
+              pscore: score,
+              answer: panswer,
+              plresult: 'true'
+          }));
+        } else {
+          if (panswer === 'ДА' && score >= 2) {
+            score -= 2
+            document.getElementById("pscore").innerText = 'Счёт: ' + score
+          } else {
+            score += 0
+            document.getElementById("pscore").innerText = 'Счёт: ' + score
+          }
+          ws.send(JSON.stringify({
+              type: "playerresult",
+              pscore: score,
+              answer: panswer,
+              plresult: 'false'
+          }));
+        }
+      }else{
+        ws.send(JSON.stringify({
+            type: "playerresult",
+            pscore: score,
+            answer: panswer,
+            plresult: 'none'
+      }))
+      }
+    };
+
+    if (gameRunning === true) {
+      document.getElementById("waitgame").style.display = "none";
+        if (roundRunning === 'start') {
+          document.getElementById("waitround").style.display = "none";
+          document.getElementById("question").style.display = "block";
+          document.getElementById("q").style.display = 'block';
+          document.getElementById("p").style.display = 'none';
+        } else if (roundRunning === 'stop'){
+            document.getElementById("waitresult").style.display = "block";
+            document.getElementById("question").style.display = "none";
+        } else {
+            document.getElementById("waitround").style.display = "block";
+            document.getElementById("waitresult").style.display = "none";
+            document.getElementById("p").style.display = 'none';
+        }
+    } else {
+      document.getElementById("waitgame").style.display = "block";
+      document.getElementById("waitround").style.display = "none";
+      document.getElementById("question").style.display = "none";
+      document.getElementById("pscore").style.display = "none";
+      document.getElementById("waitresult").style.display = "none";
+      document.getElementById("p").style.display = 'none';
     }
-};
+
+}
 
 function join() {
-    let name = document.getElementById("name").value.trim();
-    if (!name) return;
-
-    document.getElementById("playerName").innerText = name;
-    document.getElementById("game").style.display = "block";
-
     ws.send(JSON.stringify({
         type: "join",
         name
@@ -49,8 +160,14 @@ function join() {
 }
 
 function answer(a) {
+    panswer = a
+    if (panswer !== '') {document.getElementById("accept").style.display = "none"}
+    document.getElementById("q").style.display = 'none';
+    document.getElementById("p").style.display = 'block';
+    document.getElementById("p").innerText = a;
     ws.send(JSON.stringify({
         type: "answer",
+        pscore: score,
         answer: a
     }));
 }

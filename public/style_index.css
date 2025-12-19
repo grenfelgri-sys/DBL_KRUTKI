@@ -1,0 +1,90 @@
+
+#background-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 100;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* обрезает или масштабирует видео под экран */
+  object-position: 50% 20%;
+  filter: brightness(60%); /* уменьшает яркость до 60% */
+  z-index: -1; /* отправляем видео под контент */
+}
+
+#logo {
+  width: 400px;
+  height: auto;
+}
+
+#wellcome{
+  font-family: 'Orbitron', sans-serif;
+  font-style: oblique;
+  font-size: 50px;
+  letter-spacing: 0.5px;
+  background: linear-gradient(to top, #D13322, #9652B3); /* 👈 градиент снизу вверх */
+  -webkit-text-stroke: 2px rgba(0, 0, 0, 0.9); /* толщина и цвет обводки */
+  text-stroke: 2px black;
+  -webkit-background-clip: text; /* "вырезаем" фон по форме текста */
+  -webkit-text-fill-color: transparent; /* делаем текст прозрачным, чтобы был виден фон */
+}
+
+p{
+  position: relative;
+  color: white;
+  left: -10%;
+  font-size: 18px;
+}
+
+@keyframes pulse {
+  0% {
+    text-shadow: 0 0 10px rgba(255, 170, 0, 0.6);
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(255, 170, 0, 1);
+  }
+  100% {
+    text-shadow: 0 0 10px rgba(255, 170, 0, 0.6);
+  }
+}
+
+#entry{
+  font-family: 'entry2', sans-serif;
+  font-style: oblique;
+  font-size: 35px;
+  letter-spacing: 0.5px;
+  margin-left: 30px;
+  color: #FFBA17;
+  background: none;
+  border: none;
+}
+
+#entry:hover{
+  color: white;
+  animation: pulse 1s infinite ease-in-out;
+}
+/* Контент поверх видео */
+.content {
+  position: relative;
+  z-index: 1;
+  color: white;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  transform: translate(0, -70%);
+  margin-top: 40vh;
+}
+
+.name_input {
+  background: rgba(255, 255, 255, 0.2); /* прозрачный белый фон */
+  border: 2px solid rgba(255, 255, 255, 0.6); /* полупрозрачная белая рамка */
+  border-radius: 25px; /* закруглённые углы */
+  padding: 10px 20px; /* внутренние отступы */
+  color: white; /* цвет текста */
+  font-size: 30px;
+  outline: none; /* убрать синюю рамку при фокусе */
+  backdrop-filter: blur(5px); /* эффект "матового стекла" */
+  width: 300px; /* ширина поля */
+  transition: all 0.3s ease; /* плавная анимация при наведении */
+  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.9); /* толщина и цвет обводки */
+  text-stroke: 1px black;
+}
