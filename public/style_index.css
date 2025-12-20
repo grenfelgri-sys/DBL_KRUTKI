@@ -88,3 +88,32 @@ p{
   -webkit-text-stroke: 1px rgba(0, 0, 0, 0.9); /* толщина и цвет обводки */
   text-stroke: 1px black;
 }
+
+@media (max-width: 480px) {
+  #logo {
+    width: 250px;
+    height: auto;
+    margin-top: -40px;
+  }
+
+  #wellcome{
+    font-size: 18px;
+    -webkit-text-stroke: 1px rgba(0, 0, 0, 0.9); /* толщина и цвет обводки */
+    text-stroke: 1px black;
+    margin-bottom: 50px;
+  }
+
+  p{
+    position: relative;
+    color: white;
+    left: 0%;
+    font-size: 12px;
+  }
+
+  #entry{
+    position: relative;
+    font-size: 50px;
+    margin-top: 80px;
+    left: -5%;
+  }
+}
